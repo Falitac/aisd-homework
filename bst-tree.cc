@@ -26,13 +26,13 @@ void removeBST(Node*& root, Node* node) {
     if(next)
       std::printf("next: %d\n", next->val);
     
+    if(next->up) {
+      next->up->left = next->right;
+      next->right = next->up;
+    }
+
     next->left = node->left;
     next->left->up = next;
-
-    if(next->up != node) {
-      next->up->left = next->right;
-      next->right->up = next->up;
-    }
 
     if(father) {
       if(father->left == node) {
@@ -40,7 +40,9 @@ void removeBST(Node*& root, Node* node) {
       } else {
         father->right = next;
       }
+      next->up = father;
     }
+    next->right = node->right;
   } else {
     Node* newChild = node->left ? node->left : node->right;
     if(father) {
