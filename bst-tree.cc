@@ -43,6 +43,10 @@ void removeBST(Node*& root, Node* node) {
       next->up = father;
     }
     next->right = node->right;
+
+    if(node == root) {
+      root = next;
+    }
   } else {
     Node* newChild = node->left ? node->left : node->right;
     if(father) {
