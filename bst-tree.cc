@@ -16,11 +16,45 @@ Node* insertBST(Node*& root, int val, Node* father) {
   }
 }
 
+// TODO
 void removeBST(Node*& root, Node* node) {
   if(!node) return;
-  Node* first, *second;
+  Node* father = node->up;
 
-  delete first;
+  if(node->left && node->right) {
+    Node* next = findNextBST(node);
+    if(next)
+      std::printf("next: %d\n", next->val);
+    
+    next->left = node->left;
+    next->left->up = next;
+
+    if(next->up != node) {
+      next->up->left = next->right;
+      next->right->up = next->up;
+    }
+
+    if(father) {
+      if(father->left == node) {
+        father->left = next;
+      } else {
+        father->right = next;
+      }
+    }
+  } else {
+    Node* newChild = node->left ? node->left : node->right;
+    if(father) {
+      if(father->left == node) {
+        father->left = newChild;
+      } else {
+        father->right = newChild;
+      }
+    }
+    if(node == root) {
+      root = nullptr;
+    }
+  }
+  delete node;
 }
 
 void printBST(Node* root) {

@@ -20,8 +20,9 @@ void bstTreeTest() {
     std::puts("I didn't find it");
   }
 
-  std::puts("Deleting 36");
-  removeBST(root, findValueBST(root, 36));
+  int num = 36;
+  std::printf("Deleting %d\n", num);
+  removeBST(root, findValueBST(root, num));
   print2BST(root);
 
   clearBST(root);
