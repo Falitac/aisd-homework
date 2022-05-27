@@ -1,26 +1,16 @@
 #include "bst-tree.hpp"
 #include <iostream>
 
-void bstTreeTest() {
+void bstTreeTest(int num) {
   Node* root = nullptr;
   int val;
-  Node* fourNode;
   while(std::cin >> val) {
     Node* t = insertBST(root, val);
-    if(val == 4) {
-      fourNode = t;
-    }
   }
 
   print2BST(root); std::printf("\n");
-  Node* p = findNextBST(findValueBST(root, 4));
-  if(p) {
-    std::printf("Found: %d\n", p->val);
-  } else {
-    std::puts("I didn't find it");
-  }
 
-  int num = 25;
+  //int num = -20;
   std::printf("Deleting %d\n", num);
   removeBST(root, findValueBST(root, num));
   print2BST(root);
@@ -30,5 +20,6 @@ void bstTreeTest() {
 }
 
 int main(int argc, char** argv) {
-  bstTreeTest();
+  if(argc == 2)
+    bstTreeTest(std::atoi(argv[1]));
 }
