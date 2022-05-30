@@ -1,7 +1,10 @@
 #include "bst-tree.hpp"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <random>
+#include <limits>
+#include <type_traits>
 #include "Timer.hpp"
 
 void bstTreeTest(int num) {
@@ -23,11 +26,14 @@ void bstTreeTest(int num) {
 }
 
 int getGap(int size) {
-  int result = (size * 10) / 13;
-  if(result < 1) {
-    result = 1;
+  if(size == 9 || size == 10 ) {
+    return 11;
   }
-  return result;
+  size = (size * 10) / 13;
+  if(size < 1) {
+    size = 1;
+  }
+  return size;
 }
 
 void combSort(std::vector<int>& arr, int size) {
@@ -49,10 +55,6 @@ void combSort(std::vector<int>& arr, int size) {
 }
 
 int partition(std::vector<int>& arr, int l, int r) {
-  std::swap(arr[l + 1], arr[(l + r) / 2]);
-  if(arr[l + 1] > arr[r]) std::swap(arr[l+1], arr[r]);
-  if(arr[l] > arr[r]) std::swap(arr[l], arr[r]);
-  if(arr[l + 1] > arr[l]) std::swap(arr[l + 1], arr[l]);
 
   int x = arr[r];
   int i = l - 1;
@@ -65,10 +67,35 @@ int partition(std::vector<int>& arr, int l, int r) {
   std::swap(arr[i+1], arr[r]) ;
   return i + 1;
 }
+
+int partition2(std::vector<int>& t, int l, int r) {
+  #if 1
+    std::swap(t[l + 1], t[(l + r) / 2]);
+    if(t[l + 1] > t[r]) std::swap(t[l+1], t[r]);
+    if(t[l] > t[r]) std::swap(t[l], t[r]);
+    if(t[l + 1] > t[l]) std::swap(t[l + 1], t[l]);
+  #endif
+
+  int x = t[l];
+  int i = l, j = r + 1;
+  while ( true ) {
+    do {
+      i++;
+    } while (i <= r && t[i] < x);
+    do{
+      j--;
+    } while(t[j] > x);
+    if(i > j)
+      break;
+    std::swap(t[i], t[j]);
+  }
+  std::swap(t[j], t[l]);
+  return j;
+}
  
 void quickSort(std::vector<int>& arr, int l, int r) {
   if(l >= r) return;
-  int p = partition(arr, l, r);
+  int p = partition2(arr, l, r);
   quickSort(arr, l, p - 1);
   quickSort(arr, p + 1, r);
 }
@@ -88,12 +115,12 @@ void bubbleSort(std::vector<int>& arr, int l, int r) {
 }
 
 void hybridQuickSort(std::vector<int>& arr, int l, int r) {
-  if(r - l > 10) {
+  if(r - l > 20) {
     int p = partition(arr, l, r);
     quickSort(arr, l, p - 1);
     quickSort(arr, p + 1, r);
   } else {
-    bubbleSort(arr, l, r);
+    bubbleSort(arr, l, r + 1);
   }
 }
 
@@ -101,46 +128,107 @@ void hybridQuickSort(std::vector<int>& arr, int l, int r) {
 std::mt19937 mt{std::random_device{}()};
 std::uniform_int_distribution<int> gen(0, 100);
 
-void printVec(std::vector<int>& a) {
-  for(auto& element : a) {
-    std::printf("%d ", element);
+template<class Container, typename T = typename Container::value_type>
+void printVec(const Container& a) {
+  for(const auto& element : a) {
+    if constexpr(std::numeric_limits<T>::is_integer) {
+      std::printf("%d ", element);
+    } else if constexpr(std::is_floating_point<T>::value) {
+      std::printf("%.3f ", element);
+    } else {
+      std::printf("Tego nie!");
+    }
   }
   std::puts("");
 }
 
 void test(int n = 10) {
   std::vector<int> a(n);
+  std::vector<int> b;
 
   for(auto& element : a) {
     element = gen(mt);
   }
-  std::vector<int> b(a);
-  std::vector<int> c(a);
-  /*
-  for(int i = 0; i < a.size(); i++) {
-    a[i] = a.size() - i;
-  }
-  */
-
 
   Timer t;
+
+  b = {a};
   t.restart();
+  std::sort(b.begin(), b.end());
+  std::printf("std::sort() %.3lfs\n", t.restart());
 
-  quickSort(a, 0, a.size() - 1);
-  std::printf("QuickSort %.3lfs\n", t.restart());
-
+  b = {a};
+  t.restart();
   combSort(b, b.size());
   std::printf("Comb %.3lfs\n", t.restart());
 
-  hybridQuickSort(c, 0, c.size() - 1);
+  b = {a};
+  t.restart();
+  quickSort(b, 0, b.size() - 1);
+  std::printf("QuickSort %.3lfs\n", t.restart());
+
+  b = {a};
+  t.restart();
+  hybridQuickSort(b, 0, b.size() - 1);
   std::printf("Hybrid %.3lfs\n", t.restart());
+
+  b = {a};
+  t.restart();
+  bubbleSort(b, 0, b.size());
+  std::printf("Bubble sort %.3lfs\n", t.restart());
+
   if(n < 100) {
     printVec(a);
     printVec(b);
-    printVec(c);
   }
 }
 
+std::vector<double> testTimes(int n = 1) {
+  std::vector<double> result;
+
+  std::vector<int> a(n);
+  std::vector<int> b(n);
+
+  for(auto& element : a) {
+    element = gen(mt);
+  }
+
+  Timer t;
+
+  b = {a};
+  t.restart();
+  std::sort(b.begin(), b.end());
+  result.push_back(t.restart());
+
+  b = {a};
+  t.restart();
+  hybridQuickSort(b, 0, b.size() - 1);
+  result.push_back(t.restart());
+
+  b = {a};
+  t.restart();
+  quickSort(b, 0, b.size() - 1);
+  result.push_back(t.restart());
+
+  b = {a};
+  t.restart();
+  combSort(b, b.size());
+  result.push_back(t.restart());
+
+  b = {a};
+  t.restart();
+  bubbleSort(b, 0, b.size());
+  result.push_back(t.restart());
+
+  return result;
+}
+
+
 int main(int argc, char** argv) {
-  test(1000000);
+  std::puts("std::sort() hybridQuickSort(), quickSort(), combSort(), bubbleSort()");
+  for(int i = 1; i < 30000; i += 30) {
+    auto times = testTimes(i);
+    std::printf("%d ", i);
+    printVec(times);
+  }
 }
